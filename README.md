@@ -38,7 +38,9 @@ Lean (version 3.3.1, nightly-2018-04-10, commit d36b859c6579, Release)
 curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
 ```
 
-On an **M1 Mac**, you need to run the installer under Rosetta (install using `softwareupdate --install-rosetta` if you haven't already done so) because there are no M1 releases for either elan or Lean right now:
+**M1 Mac**:
+
+**Lean 4** has native macOS/aarch64 releases (nightly only so far) that you can install as above. For **Lean 3**, you need to run the installer under Rosetta (install using `softwareupdate --install-rosetta` if you haven't already done so) because there are no M1 releases for it right now:
 
 ```bash
 curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | arch -x86_64 sh
@@ -61,7 +63,7 @@ The installation will tell you where it will install elan to (`~/.elan` by defau
 $ brew install elan
 ```
 
-On an M1 Mac, you need to make sure that you are running an x86 `brew`. The manual installation above is a bit simpler in this regard.
+There are currently no M1 releases for elan on Homebrew; use the manual installation above instead.
 
 ## Nix
 

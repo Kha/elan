@@ -18,16 +18,24 @@ jobs:
           - name: Linux
             os: ubuntu-latest
             target: x86_64-unknown-linux-musl
+            use-cross: true
             # back compat
             release-target-name: x86_64-unknown-linux-gnu
           - name: Linux aarch64
             os: ubuntu-latest
             target: aarch64-unknown-linux-musl
+            use-cross: true
+            skip-tests: true
             # back compat
             release-target-name: aarch64-unknown-linux-gnu
           - name: macOS
             os: macos-latest
             target: x86_64-apple-darwin
+          - name: macOS aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            use-cross: true
+            skip-tests: true
           - name: Windows
             os: windows-latest
             target: x86_64-pc-windows-msvc
@@ -59,7 +67,7 @@ jobs:
         with:
           command: build
           args: --release --target ${{ matrix.target }}
-          use-cross: ${{ matrix.name == 'Linux' || matrix.target == 'aarch64-unknown-linux-musl' }}
+          use-cross: ${{ matrix.use-cross }}
       - name: Package
         shell: bash
         run: |
@@ -77,14 +85,14 @@ jobs:
           path: elan-${{ matrix.release-target-name || matrix.target }}*
           if-no-files-found: error
       - name: Test
-        if: matrix.target != 'aarch64-unknown-linux-musl'
+        if: !matrix.skip-tests
         uses: actions-rs/cargo@v1
         with:
           command: test
           args: --release --target ${{ matrix.target }}
           use-cross: ${{ matrix.name == 'Linux' }}
       - name: Install Test
-        if: matrix.target != 'aarch64-unknown-linux-musl'
+        if: !matrix.skip-tests
         shell: bash
         run: |
           RUST_BACKTRACE=1 target/${{ matrix.target }}/release/elan-init -y
