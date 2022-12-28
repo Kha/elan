@@ -1,3 +1,7 @@
+# Unreleased
+
+- Clarify "no updatable toolchains installed" error (#82)
+
 # 1.4.2 - 2022-09-13
 
 - Fix downloading Lean releases again
