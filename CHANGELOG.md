@@ -1,4 +1,4 @@
-# Unreleased
+# 1.4.3 - 2022-12-28
 
 - Clarify "no updatable toolchains installed" error (#82)
 
