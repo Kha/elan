@@ -33,14 +33,14 @@ pub static TOOLCHAIN_HELP: &'static str = r"DISCUSSION:
     Many `elan` commands deal with *toolchains*, a single
     installation of the Lean theorem prover. `elan` supports multiple
     types of toolchains. The most basic track the official release
-    channels: 'stable' and 'nightly'; but `elan` can also
+    channels: 'stable', 'beta', and 'nightly'; but `elan` can also
     install toolchains from the official archives and from local builds.
 
     Standard release channel toolchain names have the following form:
 
         [<origin>:]<channel>[-<date>]
 
-        <channel>       = stable|nightly|<version>
+        <channel>       = stable|beta|nightly|<version>
         <date>          = YYYY-MM-DD
 
     'channel' is either a named release channel or an explicit version
@@ -223,6 +223,6 @@ pub static COMPLETIONS_HELP: &'static str = r"DISCUSSION:
 
         PS C:\> elan completions powershell >> %USERPROFILE%\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1";
 
-pub static TOOLCHAIN_ARG_HELP: &'static str = "Toolchain name, such as 'stable', 'nightly', \
-     or '3.3.0'. For more information see `elan \
+pub static TOOLCHAIN_ARG_HELP: &'static str = "Toolchain name, such as 'stable', 'beta', nightly', \
+     or '4.0.0'. For more information see `elan \
      help toolchain`";

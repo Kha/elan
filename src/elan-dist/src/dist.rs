@@ -8,12 +8,14 @@ use notifications::Notification;
 use prefix::InstallPrefix;
 use temp;
 
-use std::fmt;
+use std::{fmt, env};
 use std::path::Path;
 
 use regex::Regex;
 
 const DEFAULT_ORIGIN: &str = "leanprover/lean4";
+// index file used as `ELAN_INDEX_URL` default for `DEFAULT_ORIGIN` requests
+const DEFAULT_INDEX_URL: &str = "https://release.lean-lang.org/index.json";
 
 // Fully-resolved toolchain descriptors. These always have full target
 // triples attached to them and are used for canonical identification,
@@ -23,14 +25,14 @@ pub struct ToolchainDesc {
     // The GitHub source repository to use (if "nightly" is specified, we append "-nightly" to this)
     // If None, we default to "leanprover/lean"
     pub origin: Option<String>,
-    // Either "nightly", "stable", an explicit version number, or a tag name
+    // Either "nightly", "beta", "stable", an explicit version number, or a tag name
     pub channel: String,
     pub date: Option<String>,
 }
 
 impl ToolchainDesc {
     pub fn from_str(name: &str) -> Result<Self> {
-        let pattern = r"^(?:([a-zA-Z0-9-]+[/][a-zA-Z0-9-]+)[:])?(?:(nightly|stable)(?:-(\d{4}-\d{2}-\d{2}))?|([a-zA-Z0-9-.]+))$";
+        let pattern = r"^(?:([a-zA-Z0-9-]+[/][a-zA-Z0-9-]+)[:])?(?:(nightly|beta|stable)(?:-(\d{4}-\d{2}-\d{2}))?|([a-zA-Z0-9-.]+))$";
 
         let re = Regex::new(&pattern).unwrap();
         if let Some(c) = re.captures(name) {
@@ -82,7 +84,7 @@ impl ToolchainDesc {
     }
 
     pub fn is_tracking(&self) -> bool {
-        let channels = ["nightly", "stable"];
+        let channels = ["nightly", "beta", "stable"];
         channels.iter().any(|x| *x == self.channel) && self.date.is_none()
     }
 }
@@ -221,9 +223,24 @@ pub fn update_from_dist_<'a>(
     .map(|()| Some(url))
 }
 
-fn toolchain_url<'a>(download: DownloadCfg<'a>, toolchain: &ToolchainDesc) -> Result<String> {
+pub enum ToolchainResolution {
+    Index(json::JsonValue),
+    Html(String),
+}
+
+fn toolchain_url<'a>(download: DownloadCfg<'a>, toolchain: &ToolchainDesc) -> Result<ToolchainResolution> {
+    if toolchain.origin.iter().all(|o| o == DEFAULT_ORIGIN) {
+        let index = fetch_url(env::var("ELAN_INDEX_URL").map(|i| i.as_str()).unwrap_or(DEFAULT_INDEX_URL))?;
+        let json = json::parse(&index).expect("failed to parse index");
+        if toolchain.is_tracking() {
+           return Ok(ToolchainResolution::Index(json[toolchain.channel][0]["assets"]))
+        }
+        if let Some(release) = json.entries().flat_map(|chan| chan.1.members()).find(|release| release["name"] == toolchain.channel) {
+            return Ok(ToolchainResolution::Index(release.clone()))
+        }
+    }
     let origin = build_origin_name(toolchain.origin.as_ref(), toolchain.channel.as_ref());
-    Ok(
+    Ok(ToolchainResolution::Html(
         match (toolchain.date.as_ref(), toolchain.channel.as_str()) {
             (None, version) if version == "stable" || version == "nightly" => {
                 (download.notify_handler)(Notification::DownloadingManifest(version));
@@ -244,7 +261,7 @@ fn toolchain_url<'a>(download: DownloadCfg<'a>, toolchain: &ToolchainDesc) -> Re
             (None, tag) => format!("https://github.com/{}/releases/expanded_assets/{}", origin, tag),
             _ => panic!("wat"),
         },
-    )
+    ))
 }
 
 pub fn host_triple() -> &'static str {

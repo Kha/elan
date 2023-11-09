@@ -463,7 +463,7 @@ fn customize_install(mut opts: InstallOpts) -> Result<InstallOpts> {
     println!("");
 
     opts.default_toolchain = common::question_str(
-        "Default toolchain? (stable/nightly/<specific version>/none)",
+        "Default toolchain? (stable/beta/nightly/<specific version>/none)",
         &opts.default_toolchain,
     )?;
 

@@ -8,6 +8,8 @@ use notifications::*;
 use prefix::InstallPrefix;
 use temp;
 
+use crate::dist::ToolchainResolution;
+
 #[derive(Debug)]
 pub struct Manifestation {
     prefix: InstallPrefix,
@@ -22,7 +24,7 @@ impl Manifestation {
     pub fn update(
         &self,
         origin: &String,
-        url: &String,
+        url: &ToolchainResolution,
         temp_cfg: &temp::Cfg,
         notify_handler: &dyn Fn(Notification),
     ) -> Result<()> {
